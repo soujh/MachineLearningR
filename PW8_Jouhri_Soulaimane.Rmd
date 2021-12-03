@@ -1,0 +1,140 @@
+---
+title: "PW8"
+author: "Soulaimane"
+date: "2 décembre 2020"
+output:
+  prettydoc::html_pretty
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+**1.** Download and import Data1  and Data2 . Plot both of the datasets on the same window. Color the observations with respect to the ground truth, like in Figure 8.6.
+
+
+```{r}
+
+data1=read.csv("data1.csv")
+data2=read.csv("data2.csv")
+par(mfrow=c(1,2))
+plot(data1[,1:2],pch=21,bg=data1$truth,main="Data1")
+plot(data2[,1:2],pch=21,bg=data2$truth,main="Data2")
+
+
+
+```
+
+
+
+
+**2.** Applyk-means on both datasets with 4 clusters. Plot both of the dataset on the same window and color the observations with respect to k-means results. Interpret the results.
+
+
+
+```{r}
+set.seed(123)
+km1<-kmeans(data1[,1:2],4)
+km2<-kmeans(data2[,1:2],4)
+par(mfrow=c(1,2))
+plot(data1[,1:2],pch=21,bg=km1$cluster)
+plot(data2[,1:2],pch=21,bg=km2$cluster)
+
+```
+
+
+
+**3.** Now fit a GMM model on the datasets.
+
+
+
+```{r}
+
+library(mclust)
+
+gmm1 <- Mclust(data1[,1:2]) #optimal model according to BIC 
+
+gmm2 <- Mclust(data2[,1:2]) #optimal model according to BIC 
+
+par(mfrow=c(1,2))
+plot(data1[,1:2], pch=21, bg=km1$classification)
+plot(data2[,1:2], pch=21, bg=km2$classification)
+
+```
+
+
+**4.** Show the summary of the GMM model you fitted on Data2. Explain what it shows.
+
+```{r}
+summary(gmm2)
+
+```
+
+**5** To plot your two-dimensional data, use the standard plot function applied on your model.
+
+```{r}
+library(mclust)
+gmm_model <- Mclust(data2[,1:2])
+
+plot(gmm_model,what="classification")
+plot(gmm_model,what="uncertainty")
+```
+
+
+**6.** To see the values of BIC for different number of mixtures use the following code.
+
+```{r}
+plot(gmm_model,what="BIC")
+```
+
+**7.** 
+
+```{r}
+dens2 <- densityMclust(data2[,1:2])
+plot(dens2, what = 'density',data = data2[,1:2], type = "hdr", prob = seq(0.1, 0.9, by = 0.1), col = "slategrey")
+plot(dens2, what = 'density',data = data2[,1:2], type = "persp", prob = seq(0.1, 0.9, by = 0.1))
+```
+
+***8 et 9 ***
+
+```{r}
+n<-100
+set.seed(123)
+y<-c(rnorm(n,-5),rnorm(n,0),rnorm(n,5))
+yclass <- c(rep(1,n),rep(2,n),rep(3,n))
+stripchart(y,pch=21,bg=yclass)
+
+```
+
+**10** Plot the histogram corresponding to your generated data. Interpret it.
+
+```{r}
+hist(y,30,probability = T)
+```
+
+
+**11.** Fit a GMM model on your generated data. Print the summary and visualize your results. Explain your results.
+
+
+```{r}
+ymodel <-Mclust(y)
+par(mfrow=c(2,2))
+plot(ymodel,what="BIC")
+plot(ymodel,what="classification")
+plot(ymodel,what="uncertainty")
+plot(ymodel,what="density")
+
+```
+
+**12.**Apply a density estimate on your generated data and visualize it. Interpret the obtained figure.
+
+```{r}
+yModelDensity <-densityMclust(y)
+plot(yModelDensity,what="density",data=y,breaks=20)
+
+```
+
+

@@ -1,0 +1,261 @@
+---
+title: "TP_25_15_2020"
+author: "FHS"
+date: "25 novembre 2020"
+output:
+  prettydoc::html_pretty
+---
+# Kmeans Clustering
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+**1.** Download the dataset 
+
+```{r, echo=T,eval=T} 
+ligue1 <- read.csv("http://mghassany.com/MLcourse/datasets/ligue1_17_18.csv", row.names=1, sep=";")
+
+#summary(ligue1)
+```
+
+**2.** Print the first two rows of the dataset and the total number of features in this dataset.
+
+```{r}
+
+knitr::kable(ligue1[1:2,]) #Two first rows
+
+dim(ligue1)
+str(ligue1)
+
+
+```
+
+**3.** Create a new dataset in which you consider only Points and Yellow.cards from the original dataset. Name it pointsCards
+
+```{r}
+pointsCards=ligue1[,c(1,10)]
+
+summary(pointsCards)
+str(pointsCards)
+```
+
+
+**4.** Apply k-means on pointsCards.
+
+```{r}
+set.seed(123)
+data <- data.frame(pointsCards)
+km <- kmeans(data, centers = 2, iter.max=20)
+```
+
+**5.** Print and describe what is inside km.
+
+
+```{r}
+km
+```
+
+**6.** What are the coordinates of the centers of the clusters 
+
+```{r}
+km$centers
+```
+
+**7.** Plot the data (Yellow.cards vs Points). Color the points corresponding to their cluster.
+
+```{r}
+library(ggplot2)
+plot(data,col=km$cluster,pch=20,cex=1)
+points(km$centers,col=1:2,pch=3,cex=3,lwd=3)
+
+```
+
+**8.** Add to the previous plot the clusters centroids and add the names of the observations.
+
+
+```{r}
+ggplot(data, aes(x=Points, y = yellow.cards)) + geom_point(color=km$cluster) + geom_text(label = rownames(data), color=km$cluster) + geom_point(data=data.frame(km$centers), aes(x=Points, y = yellow.cards), fill =c('black','red'), color=c('black','red'), shape=23, size=5)
+```
+
+
+
+**9.** Re-run k-means on pointsCards using 3 and 4 clusters and store the results into km3 and km4 respectively. Visualize the results like in question 7 and 8.
+
+
+```{r}
+
+km3 <- kmeans(data, centers = 3, iter.max=20)
+km4 <- kmeans(data, centers = 4, iter.max=20)
+
+```
+
+
+Visualization for km3 
+
+
+```{r}
+ggplot(data, aes(x=Points, y = yellow.cards)) + geom_point(color=km3$cluster) + geom_text(label = rownames(data), color=km3$cluster) + geom_point(data=data.frame(km3$centers), aes(x=Points, y = yellow.cards), fill =c('black','red','green'), color=c('black','red','green'), shape=23, size=5)
+```
+
+Visualization for km4 
+
+```{r}
+
+ggplot(data, aes(x=Points, y = yellow.cards)) + geom_point(color=km4$cluster) + geom_text(label = rownames(data), color=km4$cluster) + geom_point(data=data.frame(km4$centers), aes(x=Points, y = yellow.cards), fill =c('black','red','green','blue'), color=c('black','red','green','blue'), shape=23, size=5)
+
+```
+
+**10.** Visualize the “within groups sum of squares” of the  k-means clustering results (use the code in the link above).
+
+```{r}
+mydata <- pointsCards
+wss <- (nrow(data)-1)*sum(apply(data,2,var))
+   
+for (i in 2:15){
+    wss[i] <- sum(kmeans(data,centers=i)$withinss)
+    }
+
+plot(1:15, wss, type="b", xlab="Number of Clusters",
+      ylab="Within groups sum of squares")
+```
+
+**11.** Modify the code of the previous question in order to visualize the ‘between_SS / total_SS’. Interpret the results.
+
+```{r}
+for (i in 1:15){
+    wss[i] <- kmeans(mydata,centers=i)$betweenss/kmeans(mydata,centers=i)$totss
+    } 
+plot(1:15, wss, type="b", xlab="Number of Clusters",ylab="between_SS / total_SS")
+```
+
+
+#Ligue 1 
+
+**12.** Scale the dataset and transform it to a data frame again. Store the scaled dataset into ligue1_scaled
+
+```{r}
+
+ligue1_scaled <- data.frame(scale(ligue1))
+```
+
+**13.** Apply kmeans() on ligue1 and on ligue1_scaled using 3 clusters and 20 iterations. Store the results into km.ligue1 and km.ligue1.scaled respectively (do not forget to set a seed)
+
+```{r}
+km.ligue1 <- kmeans(ligue1, centers = 3, nstart = 20)
+km.ligue1.scaled <- kmeans(ligue1_scaled, centers = 3, nstart = 20)
+table(km.ligue1$cluster)
+```
+
+# PCA
+
+**14. **
+
+
+**15. **
+
+```{r}
+pcaligue1<- princomp(ligue1,cor = T)
+```
+
+**16. **
+
+```{r}
+require(factoextra)
+fviz_pca_biplot(pcaligue1, repel = TRUE,
+                col.var = "#2E9FDF", 
+                col.ind = "#696969")
+
+```
+
+
+
+
+**17.** 
+
+```{r echo=T,eval=T}
+library(factoextra)
+fviz_cluster(km.ligue1, data = ligue1, # km.ligue1 is where you stored your kmeans results
+              palette = c("red", "blue", "green"), # 3 colors since 3 clusters
+              ggtheme = theme_minimal(),
+              main = "Clustering Plot"
+)
+
+
+```
+
+**18**. 
+
+
+
+```{r}
+
+kme2 <- kmeans(pcaligue1$scores[, 1:2], centers = 3, nstart = 20)
+fviz_cluster(kme2, data = pcaligue1$scores[, 1:2], 
+              palette = c("red", "blue", "green"), 
+              ggtheme = theme_minimal(),
+              main = "Clustering Plot On First 2 PCs"
+)
+
+```
+
+
+
+#Hierarchical clustering on Iris dataset
+
+```{r}
+iris <- read.csv("iris.data")
+```
+
+**2. **
+```{r}
+set.seed(223)
+sampleiris<- iris[sample(1:150,40),]
+```
+
+**3. **
+```{r}
+D<- dist(sampleiris[,-5])
+```
+
+**4. **
+```{r}
+dendro.avg<- hclust(D,method="average")
+```
+
+**5. **
+```{r}
+plot(dendro.avg)
+```
+
+**6. **
+```{r}
+plot(dendro.avg, hang=-1, label=sampleiris$class)
+
+```
+
+**7. **
+```{r}
+groups.avg <- cutree(dendro.avg, k = 3)
+
+```
+
+**8. **
+```{r}
+plot(dendro.avg, hang=-1, label=sampleiris$class)
+rect.hclust(dendro.avg, 3)
+rect.hclust(dendro.avg, 3, border = c ("blue", "green", "red"))
+
+```
+
+
+**9. ** 
+```{r}
+table(groups.avg, sampleiris$class)
+
+```
+
+
+
+
